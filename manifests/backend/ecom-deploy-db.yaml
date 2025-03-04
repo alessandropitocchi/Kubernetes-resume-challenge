@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ecomm-db-deploy
+  labels:
+    app: ecomm-db
+spec:
+  selector:
+    matchLabels:
+      app: ecomm-db
+  template:
+    metadata:
+      labels:
+        app: ecomm-db
+    spec:
+      volumes:
+        - name: db-configmap
+          configMap:
+            name: db-configmap
+      containers:
+      - name: ecomm-web-container
+        image: mariadb:latest
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        volumeMounts:
+          - name: db-configmap
+            mountPath: /docker-entrypoint-initdb.d
+        env:
+          - name: DB_HOST
+            valueFrom:
+              secretKeyRef:
+                name: db-secrets
+                key: dbhost
+          - name: MARIADB_DATABASE
+            valueFrom:
+              secretKeyRef:
+                name: db-secrets
+                key: dbname
+          - name: MARIADB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: db-secrets
+                key: rootpsw
+          - name: MARIADB_USER
+            valueFrom:
+              secretKeyRef:
+                name: db-secrets
+                key: dbuser
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: db-secrets
+                key: dbpassword
+        ports:
+        - containerPort: 3306

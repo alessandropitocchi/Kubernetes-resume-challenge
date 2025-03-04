@@ -37,5 +37,14 @@ I obtained the CKA certification at the end of December 2024, which provided me 
 
 I cloned the repository containing the website and created a Dockerfile to set up a PHP 7.4 Apache-based container. The Dockerfile installs the necessary MySQL extensions (mysqli, pdo, and pdo_mysql), copies the website files into the container, and exposes port 80 for Apache. After defining the Dockerfile, I built the Docker image using docker build -t alessandropitocchi/ecommerce-frontend:v1 . and tested it locally by running the container with docker run -d -p 8080:80 --name ecommerce-frontend alessandropitocchi/ecommerce-frontend:v1. Finally, I pushed the image to Docker Hub with docker push alessandropitocchi/ecommerce-frontend:v1, making it available for deployment.
 
+### B. Database Containerization
 
+I have decided to use the official MariaDB image and manage its configuration via ConfigMap in Kubernetes.
 
+## Step 3. Manifests creation
+
+I have created backend and frontend manifest files to deploy the web application.
+I have tested these files locally using Kind.
+I have updated the SQL script to create and assign permissions to the user ecomuser.
+
+To do: Create a Persistent Volume (PV) and mount it in the deployments.

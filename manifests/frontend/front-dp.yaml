@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ecomm-web
+  labels:
+    app: ecomm-web
+spec:
+  selector:
+    matchLabels:
+      app: ecomm-web
+  template:
+    metadata:
+      labels:
+        app: ecomm-web
+    spec:
+      containers:
+      - name: ecom-web-container
+        image: alessandropitocchi/ecommerce-frontend:v1
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+          - name: DB_HOST
+            valueFrom:
+              secretKeyRef:
+                name: db-secrets
+                key: dbhost
+          - name: DB_NAME
+            valueFrom:
+              secretKeyRef:
+                name: db-secrets
+                key: dbname
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: db-secrets
+                key: dbuser
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: db-secrets
+                key: dbpassword
+        ports:
+        - containerPort: 80
