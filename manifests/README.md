@@ -209,7 +209,7 @@ spec:
 
 ### 4.3 DB storage
 
-- create storageclass
+- create storageclass - db-sc.yaml
 ```yaml
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
@@ -319,7 +319,6 @@ kubectl port-forward svc/db-service 3307:3306
 ---
 
 ## 🎯 7. Next Steps
-- Implement **Persistent Volumes** for MariaDB.
 - Add **Liveness and Readiness Probes** for better reliability.
 - Deploy to a **cloud provider** (AWS, GKE, Azure).
 
