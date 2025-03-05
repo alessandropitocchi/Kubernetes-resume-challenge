@@ -23,10 +23,8 @@ kubectl cluster-info --context kind-my-cluster
 
 ### 2.1 Apply Kubernetes Manifests
 ```sh
-kubectl apply -f backend-deployment.yaml
-kubectl apply -f frontend-deployment.yaml
-kubectl apply -f db-deployment.yaml
-kubectl apply -f db-service.yaml
+kubectl apply -f backend/
+kubectl apply -f frontend/
 ```
 Verify running pods and services:
 ```sh
@@ -61,9 +59,11 @@ metadata:
   name: db-secrets
 type: Opaque
 data:
-  rootpsw: c2VjdXJlcGFzc3dvcmQ= # base64 encoded password
-  dbuser: ZWNvbXVzZXI=
-  dbpassword: ZWNvbXBhc3N3b3Jk
+  dbhost: ...
+  rootpsw: ...
+  dbuser: ...
+  dbpassword: ...
+  dbname: ...
 ```
 
 ### 3.3 Deploy MariaDB with Configuration
@@ -92,13 +92,31 @@ spec:
             - name: db-init-script
               mountPath: /docker-entrypoint-initdb.d
           env:
+            - name: DB_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: dbhost
             - name: MARIADB_ROOT_PASSWORD
               valueFrom:
                 secretKeyRef:
                   name: db-secrets
                   key: rootpsw
             - name: MARIADB_DATABASE
-              value: "ecomdb"
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: dbname
+            - name: MARIADB_USER
+            valueFrom:
+              secretKeyRef:
+                name: db-secrets
+                key: dbuser
+            - name: DB_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: db-secrets
+                  key: dbpassword
 ```
 
 ---
@@ -125,7 +143,7 @@ spec:
           image: my-backend-image:v1
           env:
             - name: DB_HOST
-              value: "db-service"
+              value: "db-svc"
             - name: DB_USER
               valueFrom:
                 secretKeyRef:
@@ -145,24 +163,48 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: frontend-deployment
+  name: ecomm-web
+  labels:
+    app: ecomm-web
 spec:
   selector:
     matchLabels:
-      app: frontend
+      app: ecomm-web
   template:
     metadata:
       labels:
-        app: frontend
+        app: ecomm-web
     spec:
       containers:
-        - name: frontend-container
-          image: my-frontend-image:v1
-          env:
-            - name: BACKEND_URL
-              value: "http://backend-service:5000"
-          ports:
-            - containerPort: 80
+      - name: ecom-web-container
+        image: alessandropitocchi/ecommerce-frontend:v1
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        env:
+          - name: DB_HOST
+            valueFrom:
+              secretKeyRef:
+                name: db-secrets
+                key: dbhost
+          - name: DB_NAME
+            valueFrom:
+              secretKeyRef:
+                name: db-secrets
+                key: dbname
+          - name: DB_USER
+            valueFrom:
+              secretKeyRef:
+                name: db-secrets
+                key: dbuser
+          - name: DB_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: db-secrets
+                key: dbpassword
+        ports:
+        - containerPort: 80
 ```
 
 ---
@@ -201,22 +243,6 @@ Alternatively, explicitly select the database in PHP:
 ```php
 mysqli_select_db($link, "ecomdb");
 ```
-
----
-
-### ❌ 5.3 `mysqli_fetch_assoc() expects parameter 1 to be mysqli_result, bool given`
-**Cause**:  
-- The SQL query failed.
-
-**Solution**:  
-Modify the PHP code to debug errors:
-```php
-$result = $conn->query("SELECT * FROM products");
-if (!$result) {
-    die("Query failed: " . $conn->error);
-}
-```
-
 ---
 
 ## 🔌 6. Local Testing with Port Forwarding
@@ -242,7 +268,3 @@ kubectl port-forward svc/db-service 3307:3306
 - Deploy to a **cloud provider** (AWS, GKE, Azure).
 
 ---
-
-**📅 Date:** _(YYYY-MM-DD)_  
-**👨‍💻 Author:** _(Your Name)_  
-**📌 Project:** _E-commerce Web App on Kubernetes_
