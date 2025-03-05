@@ -207,6 +207,62 @@ spec:
         - containerPort: 80
 ```
 
+### 4.3 DB storage
+
+- create storageclass
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: local-storage
+provisioner: kubernetes.io/no-provisioner
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+```
+- create pv
+```yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: ecomm-pv
+spec:
+  capacity:
+    storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  storageClassName: local-storage
+  hostPath:
+    path: "/var/mariadb"
+```
+- create pvc
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: db-pvc-claim
+spec:
+  storageClassName: local-storage
+  resources:
+    requests:
+      storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+```
+- added pvc to db deployment
+```yaml
+volumes:
+  - name: db-persistent-storage
+    persistentVolumeClaim:
+      claimName: db-pvc-claim
+
+ volumeMounts:
+  - name: db-persistent-storage
+    mountPath: /var/lib/mysql
+```
+
 ---
 
 ## 🛑 5. Common Errors and Troubleshooting
