@@ -17,6 +17,9 @@ spec:
         - name: db-configmap
           configMap:
             name: db-configmap
+        - name: db-persistent-storage
+          persistentVolumeClaim:
+            claimName: db-pvc-claim
       containers:
       - name: ecomm-web-container
         image: mariadb:latest
@@ -30,7 +33,9 @@ spec:
         volumeMounts:
           - name: db-configmap
             mountPath: /docker-entrypoint-initdb.d
-        env:
+          - name: db-persistent-storage
+            mountPath: /var/lib/mysql
+        env:  
           - name: DB_HOST
             valueFrom:
               secretKeyRef:
