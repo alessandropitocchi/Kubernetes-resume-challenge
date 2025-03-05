@@ -293,7 +293,10 @@ kubectl delete pod -l app=ecomm-db
 Ensure `MARIADB_DATABASE` is set:
 ```yaml
 - name: MARIADB_DATABASE
-  value: "ecomdb"
+    valueFrom:
+      secretKeyRef:
+        name: db-secrets
+        key: dbname
 ```
 Alternatively, explicitly select the database in PHP:
 ```php
@@ -313,7 +316,7 @@ kubectl port-forward svc/db-service 3307:3306
 - **Backend:** `http://localhost:5000`
 - **Database:** Connect using:
   ```sh
-  mysql -h 127.0.0.1 -P 3307 -u ecomuser -pecompassword ecomdb
+  mysql -h 127.0.0.1 -P 3307 -u ecomuser -p ecompassword ecomdb
   ```
 
 ---
