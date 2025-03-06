@@ -47,4 +47,8 @@ I have created backend and frontend manifest files to deploy the web application
 I have tested these files locally using Kind.
 I have updated the SQL script to create and assign permissions to the user ecomuser.
 
-To do: Create a Persistent Volume (PV) and mount it in the deployments.
+### STEP 4. (To-Do)  Set Up Kubernetes on a Public Cloud Provider
+
+- Cluster Creation: Choose AWS (EKS), Azure (AKS), or GCP (GKE) and follow their documentation to create a Kubernetes cluster. Ensure you have kubectl configured to interact with your cluster.
+- Outcome: A fully operational Kubernetes cluster ready for deployment.
+
