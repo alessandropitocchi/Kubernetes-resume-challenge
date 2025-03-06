@@ -58,3 +58,4 @@ module "vpc" {
     }
 }
 
+//define eks cluster
